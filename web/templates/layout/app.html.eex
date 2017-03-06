@@ -23,7 +23,11 @@
     <%= if @view_module.include_js do %>
       <script>window.userToken = "<%= assigns[:user_token] %>"</script>
       <script>window.retroUUID = "<%= assigns[:retro_uuid] %>"</script>
-      <script src="<%= static_path(@conn, "/js/app.js") %>"></script>
+      <%= if Mix.env == :dev do %>
+        <script src="http://localhost:4001/js/app.js"></script>
+      <% else %>
+        <script src="<%= static_path(@conn, "/js/app.js") %>"></script>
+      <% end %>
     <% end %>
   </body>
 </html>
