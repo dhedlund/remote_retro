@@ -31,6 +31,6 @@ dependencies:
     - node_modules/.bin/webpack
 test:
   override:
-    - mocha
+    - NODE_ENV=test mocha
     - mix test --exclude feature_test
     - mix test --only feature_test
