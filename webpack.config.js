@@ -12,7 +12,6 @@ const OUTPUT_PUBLIC_PATH = `http://localhost:${DEV_SERVER_PORT}/`
 module.exports = {
   entry: [
     "react-hot-loader/patch",
-    `webpack-dev-server/client?http://localhost:${DEV_SERVER_PORT}/`,
     "webpack/hot/only-dev-server",
     "./web/static/css/app.css",
     "./web/static/js/app.js",
@@ -20,7 +19,6 @@ module.exports = {
   output: {
     path: OUTPUT_PATH,
     filename: "js/app.js",
-    publicPath: OUTPUT_PUBLIC_PATH,
   },
   devServer: {
     hot: true,
