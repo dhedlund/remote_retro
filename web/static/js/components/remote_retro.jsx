@@ -1,4 +1,6 @@
 import React, { Component, PropTypes } from "react"
+import { connect } from "react-redux"
+import { addUsers } from "../actions/user"
 import { Presence } from "phoenix"
 import update from "immutability-helper"
 
@@ -21,24 +23,26 @@ const updatePresences = (presences, userToken, newAttributes) => {
   })
 }
 
-class RemoteRetro extends Component {
+export class RemoteRetro extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      presences: {},
       ideas: [],
       stage: "idea-generation",
     }
   }
 
   componentWillMount() {
-    const { retroChannel } = this.props
+    const { retroChannel, addUsers } = this.props
 
     retroChannel.join()
       .receive("ok", retroState => { this.setState(retroState) })
       .receive("error", error => console.error(error))
 
-    retroChannel.on("presence_state", presences => this.setState({ presences }))
+    retroChannel.on("presence_state", presences => {
+      const users = Presence.list(presences, (_username, presence) => (presence.user))
+      addUsers(users)
+    })
 
     retroChannel.on("new_idea_received", newIdea => {
       this.setState({ ideas: [...this.state.ideas, newIdea] })
@@ -97,15 +101,14 @@ class RemoteRetro extends Component {
   }
 
   render() {
-    const { userToken, retroChannel } = this.props
+    const { users, userToken, retroChannel } = this.props
     const { presences, ideas, stage } = this.state
 
-    const users = Presence.list(presences, (_username, presence) => (presence.user))
-    const currentPresence = presences[userToken]
+    const currentUser = users.find(user => user.token === userToken)
 
     return (
       <Room
-        currentPresence={currentPresence}
+        currentUser={currentUser}
         users={users}
         ideas={ideas}
         stage={stage}
@@ -120,4 +123,15 @@ RemoteRetro.propTypes = {
   userToken: PropTypes.string.isRequired,
 }
 
-export default RemoteRetro
+const mapStateToProps = state => ({
+  users: state.user
+})
+
+const mapDispatchToProps = dispatch => ({
+  addUsers: users => dispatch(addUsers(users))
+})
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(RemoteRetro)
